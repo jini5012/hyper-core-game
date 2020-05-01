@@ -67,6 +67,6 @@ tasks {
 
     create<Copy>("distJar") {
         from(shadowJar)
-        into("W:\\Servers\\gamecon (1.12.2)\\plugins")
+        into("C:\\Users\\Guest1\\desktop\\paper\\plugins")
     }
 }
