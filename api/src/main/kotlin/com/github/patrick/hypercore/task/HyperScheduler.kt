@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2020 PatrickKR
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
@@ -19,36 +20,39 @@
 
 package com.github.patrick.hypercore.task
 
-import com.github.patrick.hypercore.Hyper.hyperCreepers
-import com.github.patrick.hypercore.Hyper.hyperPlayer
-import com.github.patrick.hypercore.Hyper.hyperSkeletons
-import com.github.patrick.hypercore.Hyper.hyperTask
-import com.github.patrick.hypercore.Hyper.hyperZombies
+import com.github.noonmaru.customentity.CustomEntityPacket.unregister
+import com.github.patrick.hypercore.Hyper
 
 class HyperScheduler : Runnable {
     override fun run() {
-        hyperPlayer?.let {
-            if (hyperTask == null) {
-                val border = it.world.worldBorder
-                border.center = it.location
-                border.size = 16.0
-                border.warningDistance = 1
-                hyperTask = HyperWorldBorderTask(it)
-            } else {
-                hyperTask?.run()
+        with(Hyper) {
+            HYPER_BORDER_PLAYER?.let {
+                if (HYPER_BORDER_TASK == null) {
+                    val border = it.world.worldBorder
+                    border.center = it.location
+                    border.size = 16.0
+                    border.damageBuffer = 2.0
+                    border.warningDistance = 1
+                    HYPER_BORDER_TASK = HyperBorderTask(it)
+                } else {
+                    HYPER_BORDER_TASK?.run()
+                }
+            }
+
+            HYPER_SKELETONS.removeIf { !it.entity.isValid || it.entity.isDead }
+            HYPER_SKELETONS.forEach { it.update() }
+
+            setOf(HYPER_CREEPERS, HYPER_ZOMBIES).forEach {
+                it.forEach entry@{ entry ->
+                    val entity = entry.value.entity
+                    if (!entity.isValid || entity.isDead) {
+                        HYPER_CREEPERS.remove(entry.key)
+                        unregister(entry.key).sendAll()
+                        return@entry
+                    }
+                    entry.value.update()
+                }
             }
         }
-
-        hyperSkeletons.removeIf { !it.entity.isValid || it.entity.isDead }
-        hyperSkeletons.forEach { it.update() }
-
-        hyperCreepers.forEach {
-            val entity = it.value.entity
-            if (!entity.isValid || entity.isDead) hyperCreepers.remove(it.key)
-        }
-        hyperCreepers.values.forEach { it.update() }
-
-        hyperZombies.removeIf { !it.entity.isValid || it.entity.isDead }
-        hyperZombies.forEach { it.update() }
     }
 }

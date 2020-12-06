@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2020 PatrickKR
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
@@ -19,32 +20,46 @@
 
 package com.github.patrick.hypercore.command
 
-import com.github.patrick.hypercore.Hyper.hyperPlayer
+import com.github.patrick.hypercore.Hyper
 import org.bukkit.Bukkit.getOnlinePlayers
 import org.bukkit.Bukkit.getPlayerExact
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
-import org.bukkit.entity.Player
-import kotlin.streams.toList
 
 class HyperCommand : CommandExecutor, TabCompleter {
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         if (args.isNotEmpty()) {
-            getPlayerExact(args[0])?.let {
-                hyperPlayer = it
-                return true
+            when (args.count()) {
+                2 -> {
+                    when (args[1].toLowerCase()) {
+                        "worldborder", "border" -> getPlayerExact(args[0])?.let {
+                            Hyper.HYPER_BORDER_PLAYER = it
+                            return true
+                        }
+                        "tree" -> getPlayerExact(args[0])?.let {
+                            Hyper.HYPER_BLOCK_PLAYER = it
+                            return true
+                        }
+                    }
+                }
             }
             if (args[0] == "help") {
-                sender.sendMessage("/$label <Player Name> to start hyper")
+                sender.sendMessage("/$label <Player> <Type> to start hyper")
                 return true
             }
         }
         return false
     }
 
-    override fun onTabComplete(sender: CommandSender, command: Command, alias: String, args: Array<out String>) =
-        if (args.size == 1) getOnlinePlayers().stream().map(Player::getName).toList().filter { it.startsWith(args[0]) }
-        else emptyList()
+    override fun onTabComplete(sender: CommandSender, command: Command, alias: String, args: Array<out String>): List<String> {
+        return when (args.count()) {
+            1 -> getOnlinePlayers().map { it.name }.filter(args[0])
+            2 -> listOf("border", "worldborder", "tree").filter(args[1])
+            else -> emptyList()
+        }
+    }
 }
+
+private fun List<String>.filter(keyword: String) = filter { it.toLowerCase().startsWith(keyword.toLowerCase()) }

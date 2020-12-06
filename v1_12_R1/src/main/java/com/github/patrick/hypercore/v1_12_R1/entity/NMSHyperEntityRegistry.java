@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2020 PatrickKR
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
@@ -25,6 +26,7 @@ import net.minecraft.server.v1_12_R1.Entity;
 import net.minecraft.server.v1_12_R1.EntityTypes;
 import net.minecraft.server.v1_12_R1.MinecraftKey;
 import net.minecraft.server.v1_12_R1.RegistryMaterials;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -37,19 +39,18 @@ class NMSHyperEntityRegistry extends RegistryMaterials {
     private static NMSHyperEntityRegistry instance = null;
 
     private final BiMap<MinecraftKey, Class<? extends Entity>> customEntities = HashBiMap.create();
-    private final BiMap<Class<? extends Entity>, MinecraftKey> customEntityClasses = this.customEntities.inverse();
+    private final BiMap<Class<? extends Entity>, MinecraftKey> customEntityClasses = customEntities.inverse();
     private final Map<Class<? extends Entity>, Integer> customEntityIds = new HashMap<>();
 
     private final RegistryMaterials wrapped;
 
     private NMSHyperEntityRegistry(RegistryMaterials original) {
-        this.wrapped = original;
+        wrapped = original;
     }
 
+    @Nullable
     public static NMSHyperEntityRegistry getInstance() {
-        if (instance != null) {
-            return instance;
-        }
+        if (instance != null) return instance;
 
         instance = new NMSHyperEntityRegistry(EntityTypes.b);
 
@@ -74,33 +75,30 @@ class NMSHyperEntityRegistry extends RegistryMaterials {
     public void putCustomEntity(int entityId, String entityName, Class<? extends Entity> entityClass) {
         MinecraftKey minecraftKey = new MinecraftKey(entityName);
 
-        this.customEntities.put(minecraftKey, entityClass);
-        this.customEntityIds.put(entityClass, entityId);
+        customEntities.put(minecraftKey, entityClass);
+        customEntityIds.put(entityClass, entityId);
     }
 
     @Override
     public Class<? extends Entity> get(Object key) {
-        if (this.customEntities.containsKey(key)) {
-            return this.customEntities.get(key);
-        }
+        if (customEntities.containsKey(key))
+            return customEntities.get(key);
 
         return (Class<? extends Entity>) wrapped.get(key);
     }
 
     @Override
     public int a(Object key) {
-        if (this.customEntityIds.containsKey(key)) {
-            return this.customEntityIds.get(key);
-        }
+        if (customEntityIds.containsKey(key))
+            return customEntityIds.get(key);
 
-        return this.wrapped.a(key);
+        return wrapped.a(key);
     }
 
     @Override
     public MinecraftKey b(Object value) {
-        if (this.customEntityClasses.containsKey(value)) {
-            return this.customEntityClasses.get(value);
-        }
+        if (customEntityClasses.containsKey(value))
+            return customEntityClasses.get(value);
 
         return (MinecraftKey) wrapped.b(value);
     }

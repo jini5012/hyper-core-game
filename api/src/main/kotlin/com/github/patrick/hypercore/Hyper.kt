@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2020 PatrickKR
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
@@ -19,25 +20,36 @@
 
 package com.github.patrick.hypercore
 
+import com.github.noonmaru.tap.LibraryLoader
 import com.github.patrick.hypercore.entity.HyperCreeper
 import com.github.patrick.hypercore.entity.HyperEntityManager
 import com.github.patrick.hypercore.entity.HyperSkeleton
 import com.github.patrick.hypercore.entity.HyperZombie
-import com.github.patrick.utils.bukkit.BukkitClassLoader.getBukkitVersion
-import com.github.patrick.utils.bukkit.BukkitClassLoader.load
-import org.bukkit.Bukkit.getServer
+import com.github.patrick.hypercore.task.HyperTreeTask
+import org.bukkit.Material
 import org.bukkit.entity.Player
+import org.bukkit.scheduler.BukkitTask
 
 object Hyper {
-    val ENTITY: HyperEntityManager = load(HyperEntityManager::class.java, "NMS", getBukkitVersion(getServer()))
+    val ENTITY = requireNotNull(LibraryLoader.load(HyperEntityManager::class.java)) { "Unable to load NMS class." }
 
-    var hyperPlayer: Player? = null
+    var HYPER_BORDER_PLAYER: Player? = null
+        internal set
 
-    var hyperTask: Runnable? = null
+    var HYPER_BLOCK_PLAYER: Player? = null
+        internal set
 
-    val hyperSkeletons = HashSet<HyperSkeleton>()
+    internal var HYPER_BORDER_TASK: Runnable? = null
 
-    val hyperCreepers = HashMap<Int, HyperCreeper>()
+    internal val HYPER_TREE_BUKKIT_TASKS = HashSet<BukkitTask>()
 
-    val hyperZombies = HashSet<HyperZombie>()
+    internal val HYPER_TREE_TASKS = HashSet<HyperTreeTask>()
+
+    val HYPER_SKELETONS = HashSet<HyperSkeleton>()
+
+    val HYPER_CREEPERS = HashMap<Int, HyperCreeper>()
+
+    val HYPER_ZOMBIES = HashMap<Int, HyperZombie>()
+
+    internal val TREE_MATERIAL = setOf(Material.LOG, Material.LOG_2, Material.LEAVES, Material.LEAVES_2)
 }
